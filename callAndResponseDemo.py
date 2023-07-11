@@ -4,8 +4,8 @@ import json
 openai.api_key = os.getenv("OPEN_API_KEY")
 base_prompt='''Play as a software quality assurance expert. 
 Given software requirements and functions to verify call the functions to verify that they meet given requirements.
-The user will continue to respond with the result of the function calls until all requirements have been tested. 
-Once the requirements have been tested review the results and determine which requirements were met.'''
+The user will continue to respond with the result of the function calls until you determine all requirements have been tested. 
+Once the requirements have been tested state 'Test Comeplete' and print a review the results and determine which requirements were met.'''
 def addOne(input):
     return input+1
 def addTwo(input):
@@ -16,7 +16,14 @@ def addOneHelper(arguments):
     parameter = arguments_drop_front[:arguments_drop_front.find('\n')]
     return addOne(int(parameter))
 
-function_dict = {'addOne':addOneHelper}
+def addTwoHelper(arguments):
+    front = arguments.find(': ')
+    arguments_drop_front = arguments[front+2:]
+    parameter = arguments_drop_front[:arguments_drop_front.find('\n')]
+    return addTwo(int(parameter))
+
+function_dict = {'addOne':addOneHelper,
+                 'addTwo':addTwoHelper}
 
 def addMessage(messages, role, content, function_call):
     messageDict = {'role': role, "content": content}
@@ -89,6 +96,20 @@ def converse(messages):
                     },
                     "required": ["input"],
                 },
+            },
+            {
+                "name": "addTwo",
+                "description": "Add two to the input and return the result",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "input": {
+                            "type": "integer",
+                            "description": "the input",
+                        },
+                    },
+                    "required": ["input"],
+                },
             }
         ],
         function_call="auto",
@@ -96,7 +117,8 @@ def converse(messages):
     )
     return completion
 
-requirement = "Requirement: The library can add one or two to inputs from the user."
+requirement = '''Requirement: The library can add one to inputs from the user.
+Requirement: The library can add two to inputs from the user'''
 messages = [{'role': 'system', "content": base_prompt}, {'role': 'user', 'content': requirement},]
 completion = grade(messages)
 print(completion)
