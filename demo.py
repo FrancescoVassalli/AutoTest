@@ -1,7 +1,7 @@
 import openai
 import os
 import json
-openai.api_key = os.getenv("OPEN_API_KEY")
+openai.api_key = os.getenv("OPENAI_API_KEY")
 base_prompt='''Play as a software quality assurance expert. 
 Given software requirements and functions to verify call the functions to verify that they meet given requirements.
 The user will continue to respond with the result of the function calls until all requirements have been tested. 
