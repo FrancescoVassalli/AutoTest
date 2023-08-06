@@ -4,19 +4,24 @@ import json
 import pandas as pd
 import random
 import numpy as np
+import time
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-system_prompt = '''The following is an example of pairs of phrases from US patents with a score indicating how similar they are. 
-The user will then give new phrases and you will answer with what the similarity score should be. In the format 'Score: 0.25'. Only return 0,0.25,0.5,0.75, or 1.0 as options,
+system_prompt = '''You are given examples pairs of phrases from US patents with a score indicating how similar they are. 
+The user will then give new phrases and you will answer with what the similarity score should be. In the format 'Score: 0.25'. Only return 0,0.25,0.5,0.75, 1.0 as options,
 Examples:\n'''
 phrase_map = {'similar':1,'not similar':0, 'unsure':.5}
 round_max_loss = {0:1,.25:.75,.5:.5,.75:.75,1:1}
 df = pd.read_csv("train.csv")
 random_indicies = list(range((len(df))))
 random.shuffle(random_indicies)
-random_indicies = random_indicies[:64]
+shuffle_indicies = random_indicies[16:]
+random_indicies = random_indicies[:16]
+print(random_indicies)
+print(shuffle_indicies)
 score_options = [0,.25,.5,.75,1.0]
+bad_indicies = []
 count = 0
 loss = 0
 max_loss = 0
@@ -51,8 +56,7 @@ def compareScores(completion_score,real_score):
     else:
         return abs(completion_score-real_score)
 
-print(df.head(6))
-for i in range(len(df)):
+for i in shuffle_indicies:
     if i in random_indicies:
         continue
     if count>max_count:
@@ -62,9 +66,12 @@ for i in range(len(df)):
     loss = loss + compareScores(scoreCompletion(completion),df.loc[i,'score'])
     random_loss = random_loss + compareScores(random_scores[i],df.loc[i,'score'])
     max_loss = max_loss + round_max_loss[df.loc[i,'score']]
+    if loss == max_loss:
+        bad_indicies.append(i)
     count = count+1
-
-
+    time.sleep(1)
+print("loss")
 print(1-loss/max_loss)
+print("random loss")
 print(1-random_loss/max_loss)
 print(df.loc[:, 'score'].mean())
