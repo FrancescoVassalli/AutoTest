@@ -5,7 +5,7 @@ import pandas as pd
 import random
 import numpy as np
 
-system_prompt = '''You are given examples pairs of phrases from US patents with a score indicating how similar they are. 
+system_prompt = '''You are given examples pairs of phrases from US patents with a score indicating how similar they are.
 The user will then give new phrases and you will answer with what the similarity score should be. In the format 'Score: 0.25'. Only return 0,0.25,0.5,0.75, 1.0 as options,
 Examples:
 Anchor: prolog; Target: prolog signal; Score: 1.0
